@@ -1,13 +1,14 @@
 int[][] grid = new int[9][9]; 
 boolean[][] locked;           
-int cell = 60;                
+int cell = 80;                
 int[] selected = null;        
-int buttonY = 560;            
+int buttonY = 720;            
 
 void setup() {
-  size(540, 620);
+  size(800, 1000);   
   textAlign(CENTER, CENTER);
   textSize(24);
+
   String[] lines = loadStrings("Data.txt");
   int r = 0;
   while (r < lines.length) {
@@ -36,46 +37,74 @@ void draw() {
   background(255);
   drawGrid(0, 0, 9, 9, cell);
   drawNumbers(0, 0, cell);
-  drawButtons(0, buttonY, 60, 9);
+  drawButtons(0, buttonY, 80, 9);
   Finish(0, 0, cell);
+  drawRemainCells();
+  drawRemainCellPositions();
 }
 
 void drawGrid(int x_start, int y_start, int rows, int cols, int cellSize) {
+  int r = 0;
+  while (r < rows) {
+    int c = 0;
+    while (c < cols) {
+      if (grid[r][c] != 0 && !locked[r][c]) {
+        if (isConflict(r, c, grid[r][c])) {
+          fill(255, 150, 150);
+        }
+        else {
+          fill(150, 255, 150);
+        }
+      } 
+      else {
+        fill(255);
+      }
+      stroke(0); 
+      rect(x_start + c * cellSize, y_start + r * cellSize, cellSize, cellSize);
+      c++;
+    }
+    r++;
+  }
   int i = 0;
   while (i <= rows) {
+    stroke(0);
     if (i % 3 == 0) {
-      strokeWeight(3);
+      strokeWeight(6);
     } else {
-      strokeWeight(1);
+      strokeWeight(2);
     }
-    line(x_start, y_start + i * cellSize, x_start + cols * cellSize, y_start + i * cellSize);
-    line(x_start + i * cellSize, y_start, x_start + i * cellSize, y_start + rows * cellSize);
+    line(x_start, y_start + i * cellSize,x_start + cols * cellSize, y_start + i * cellSize);
+    line(x_start + i * cellSize, y_start,x_start + i * cellSize, y_start + rows * cellSize);
     i++;
   }
   if (selected != null) {
-    int r = selected[0];
-    int c = selected[1];
+    int sr = selected[0];
+    int sc = selected[1];
+    if (grid[sr][sc] == 0) {
+      fill(0, 150, 255, 100); 
+      noStroke();
+      rect(x_start + sc * cellSize, y_start + sr * cellSize, cellSize, cellSize);
+    } 
     noFill();
-    strokeWeight(3);
-    rect(x_start + c * cellSize, y_start + r * cellSize, cellSize, cellSize);
+    stroke(0, 150, 255);
+    strokeWeight(4);
+    rect(x_start + sc * cellSize, y_start + sr * cellSize, cellSize, cellSize);
   }
+
+  fill(0);
+  stroke(0);
+  strokeWeight(3);
 }
 
 void drawNumbers(int x_start, int y_start, int cellSize) {
-  textSize(32);
+  textSize(40);
   int r = 0;
   while (r < 9) {
     int c = 0;
     while (c < 9) {
       if (grid[r][c] != 0) {
-        if (locked[r][c]) {
-          fill(0);
-        } else if (isConflict(r, c, grid[r][c])) {
-          fill(255, 0, 0);
-        } else {
-          fill(0, 200, 0);
-        }
-        text(str(grid[r][c]), x_start + c * cellSize + cellSize / 2, y_start + r * cellSize + cellSize / 2);
+        fill(0);
+        text(str(grid[r][c]), x_start + c * cellSize + cellSize/2, y_start + r * cellSize + cellSize/2);
       }
       c++;
     }
@@ -84,7 +113,7 @@ void drawNumbers(int x_start, int y_start, int cellSize) {
 }
 
 void drawButtons(int x_start, int y_start, int buttonSize, int count) {
-  textSize(30);
+  textSize(36); 
   int i = 0;
   while (i < count) {
     int x = x_start + i * buttonSize;
@@ -92,20 +121,19 @@ void drawButtons(int x_start, int y_start, int buttonSize, int count) {
     fill(220);
     rect(x, y, buttonSize, buttonSize);
     fill(0);
-    text(str(i + 1), x + buttonSize / 2, y + buttonSize / 2);
+    text(str(i + 1), x + buttonSize/2, y + buttonSize/2);
     i++;
   }
 }
 
 void mousePressed() {
-  if (mouseY < 540) {
+  if (mouseY < cell * 9) {
     int c = mouseX / cell;
     int r = mouseY / cell;
-    if (r >= 0 && r < 9 && c >= 0 && c < 9) {
-      selected = new int[]{r, c}; 
-    }
-  } else if (mouseY >= buttonY && mouseY <= buttonY + 60) {
-    int i = mouseX / 60;
+    if (r >= 0 && r < 9 && c >= 0 && c < 9) selected = new int[]{r, c};
+  } 
+  else if (mouseY >= buttonY && mouseY <= buttonY + 80) {
+    int i = mouseX / 80;
     if (i >= 0 && i < 9 && selected != null) {
       int r = selected[0];
       int c = selected[1];
@@ -118,40 +146,42 @@ void mousePressed() {
 
 boolean isConflict(int row, int col, int val) {
   int c = 0;
-  while (c < 9) {
-    if (c != col && grid[row][c] == val) return true;
-    c++;
+  while (c < 9) { 
+    if (c != col && grid[row][c] == val) {
+      return true; 
+    }
+    c++; 
   }
-
   int r = 0;
-  while (r < 9) {
-    if (r != row && grid[r][col] == val) return true;
-    r++;
+  while (r < 9) { 
+    if (r != row && grid[r][col] == val) {
+      return true; 
+    }
+    r++; 
   }
-
   int startRow = row - row % 3;
   int startCol = col - col % 3;
   r = startRow;
   while (r < startRow + 3) {
     c = startCol;
-    while (c < startCol + 3) {
-      if ((r != row || c != col) && grid[r][c] == val) return true;
-      c++;
+    while (c < startCol + 3) { 
+      if ((r != row || c != col) && grid[r][c] == val) {
+        return true; 
+      }
+      c++; 
     }
     r++;
   }
   return false;
 }
 
+
 boolean Finish(int x_start, int y_start, int cellSize) {
   int r = 0;
   while (r < 9) {
     int c = 0;
     while (c < 9) {
-      if (grid[r][c] == 0) {
-        return false;
-      }
-      if (isConflict(r, c, grid[r][c])) {
+      if (grid[r][c] == 0 || isConflict(r, c, grid[r][c])) {
         return false;
       }
       c++;
@@ -160,10 +190,59 @@ boolean Finish(int x_start, int y_start, int cellSize) {
   }
   background(255);
   fill(0);
-  textSize(50);
+  textSize(60);
   textAlign(CENTER, CENTER);
-  text("You Win !", width / 2, height / 2);
+  text("You Win !", width/2, height/2);
   noLoop();
   return true;
 }
 
+int countRemainCells() {
+  int count = 0;
+  int r = 0;
+  while (r < 9) {
+    int c = 0;
+    while (c < 9) {
+      if (grid[r][c] == 0) {
+        count++;
+      }
+      c++;
+    }
+    r++;
+  }
+  return count;
+}
+
+void drawRemainCells() {
+  fill(0);
+  textSize(30);
+  int remaining = countRemainCells();
+  text("Remain : " + remaining, 100, 830);
+}
+
+void drawRemainCellPositions() {
+  fill(0);
+  textSize(25);  
+  String positions = "";
+  int count = 0;  
+  int r = 0;
+  int y = 860;    
+  while (r < 9) {
+    int c = 0;
+    while (c < 9) {
+      if (grid[r][c] == 0) {
+        positions += "(" + r + "," + c + ") ";
+        count++;
+        if (count >= 13) {          
+          text(positions, 350, y);
+          y += 25;                 
+          positions = "";
+          count = 0;
+        }
+      }
+      c++;
+    }
+    r++;
+  }
+   text(positions, 170, y);
+}
