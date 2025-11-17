@@ -5,7 +5,7 @@ int[] selected = null;
 int buttonY = 720;            
 
 void setup() {
-  size(800, 1000);   
+  size(800, 900);   
   textAlign(CENTER, CENTER);
   textSize(24);
 
@@ -20,7 +20,6 @@ void setup() {
     }
     r++;
   }
-  
   locked = new boolean[9][9];
   r = 0;
   while (r < 9) {
@@ -38,9 +37,8 @@ void draw() {
   drawGrid(0, 0, 9, 9, cell);
   drawNumbers(0, 0, cell);
   drawButtons(0, buttonY, 80, 9);
+  drawEmptyCounts(750, 45);
   Finish(0, 0, cell);
-  drawRemainCells();
-  drawRemainCellPositions();
 }
 
 void drawGrid(int x_start, int y_start, int rows, int cols, int cellSize) {
@@ -90,7 +88,6 @@ void drawGrid(int x_start, int y_start, int rows, int cols, int cellSize) {
     strokeWeight(4);
     rect(x_start + sc * cellSize, y_start + sr * cellSize, cellSize, cellSize);
   }
-
   fill(0);
   stroke(0);
   strokeWeight(3);
@@ -191,58 +188,34 @@ boolean Finish(int x_start, int y_start, int cellSize) {
   background(255);
   fill(0);
   textSize(60);
-  textAlign(CENTER, CENTER);
   text("You Win !", width/2, height/2);
   noLoop();
   return true;
 }
 
-int countRemainCells() {
+int countEmptyInRow(int row) {
+  int c = 0;
   int count = 0;
-  int r = 0;
-  while (r < 9) {
-    int c = 0;
-    while (c < 9) {
-      if (grid[r][c] == 0) {
-        count++;
-      }
-      c++;
+  while (c < 9) {
+    if (grid[row][c] == 0) {
+      count++;
     }
-    r++;
+    c++;
   }
   return count;
 }
 
-void drawRemainCells() {
+void drawEmptyCounts(int x, int y) {
   fill(0);
   textSize(30);
-  int remaining = countRemainCells();
-  text("Remain : " + remaining, 100, 830);
-}
-
-void drawRemainCellPositions() {
-  fill(0);
-  textSize(25);  
-  String positions = "";
-  int count = 0;  
   int r = 0;
-  int y = 860;    
+  int offset = 0;
   while (r < 9) {
-    int c = 0;
-    while (c < 9) {
-      if (grid[r][c] == 0) {
-        positions += "(" + r + "," + c + ") ";
-        count++;
-        if (count >= 13) {          
-          text(positions, 350, y);
-          y += 25;                 
-          positions = "";
-          count = 0;
-        }
-      }
-      c++;
+    int emptyCount = countEmptyInRow(r);
+    if (emptyCount > 0) {
+      text(emptyCount, x, y + offset);
     }
     r++;
+    offset += 80;
   }
-   text(positions, 170, y);
 }
